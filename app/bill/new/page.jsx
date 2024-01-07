@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from "react";
 import supabase from "../../supabaseConnection";
 import { useRouter } from "next/navigation";
+import Navbar from "../../components/Navbar";
 
 function Home() {
   const router = useRouter();
@@ -10,8 +11,21 @@ function Home() {
   const [title, setTitle] = useState("");
   const [amount, setAmount] = useState("");
   const [userId, setUserId] = useState("");
+  const [loggedInUser, setLoggedInUser] = useState(null);
 
   useEffect(() => {
+    async function fetchUser() {
+      try {
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+        console.log(user);
+        setLoggedInUser(user);
+      } catch (error) {
+        console.error("Error fetching user:", error);
+      }
+    }
+    fetchUser();
     async function fetchUsers() {
       try {
         const { data, error } = await supabase.from("users").select("*");
@@ -114,9 +128,12 @@ function Home() {
     }
   };
 
+  if (!loggedInUser) return <div></div>;
+
   return (
     <>
       <div className="w-[600px] flex flex-col justify-center items-center border rounded-xl p-5">
+        <Navbar key={loggedInUser} />
         <h1 className="ml-10 w-[600px]">Smash Turnier</h1>
         <form className="flex flex-col" onSubmit={handleSubmit}>
           <label htmlFor="title">Titel:</label>

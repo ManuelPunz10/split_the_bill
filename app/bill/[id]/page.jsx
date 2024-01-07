@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import supabase from "../../supabaseConnection";
+import Navbar from "../../components/Navbar";
 
 export default function ExpensePage({ params }) {
   const [title, setTitle] = useState("");
@@ -9,8 +10,21 @@ export default function ExpensePage({ params }) {
   const [users, setUsers] = useState([]);
   const [payedByUser, setpayedByUser] = useState("");
   const [positiveAmounts, setPositiveAmounts] = useState([]);
+  const [loggedInUser, setLoggedInUser] = useState(null);
 
   useEffect(() => {
+    async function fetchUser() {
+      try {
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+        console.log(user);
+        setLoggedInUser(user);
+      } catch (error) {
+        console.error("Error fetching user:", error);
+      }
+    }
+    fetchUser();
     const retrieveExpenseDetails = async () => {
       const { data: expenseData, error: expenseError } = await supabase
         .from("transactions")
@@ -103,8 +117,11 @@ export default function ExpensePage({ params }) {
     });
   }
 
+  if (!loggedInUser) return <div></div>;
+
   return (
     <div className="w-[600px] flex flex-col justify-center items-center">
+      <Navbar key={loggedInUser} />
       <div className="container-table">
         <h1 className="w-[600px]">Smash Turnier</h1>
         <h2 className="w-[600px]">{title}</h2>

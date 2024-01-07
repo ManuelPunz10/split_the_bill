@@ -1,14 +1,30 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import supabase from "../supabaseConnection";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import Navbar from "../components/Navbar";
 
 export default function Posts() {
   const [usersSupa, setUsersSupa] = useState([]);
   const [transactionsSupa, setTransactionsSupa] = useState([]);
   const [expensesSupa, setExpensesSupa] = useState([]);
+  const [loggedInUser, setLoggedInUser] = useState(null);
 
   useEffect(() => {
+    async function fetchUser() {
+      try {
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+        console.log(user);
+        setLoggedInUser(user);
+      } catch (error) {
+        console.error("Error fetching user:", error);
+      }
+    }
+
+    fetchUser();
     async function fetchData() {
       try {
         const { data: usersData, error: usersError } = await supabase
@@ -60,8 +76,11 @@ export default function Posts() {
     });
   });
 
+  if (!loggedInUser) return <div></div>;
+
   return (
     <div className="w-[600px] flex flex-col justify-center items-center">
+      <Navbar key={loggedInUser} />
       <h1 className="w-[600px]">Smash Turnier</h1>
       <h2 className="w-[600px]">Overview</h2>
       <ul className="w-[600px]">

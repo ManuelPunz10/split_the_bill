@@ -3,6 +3,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import supabase from "../supabaseConnection";
 import Posts from "../pages/page";
+import Navbar from "../components/Navbar";
 
 export default function AuthForm() {
   const [loggedInUser, setLoggedInUser] = useState(null);
@@ -15,7 +16,9 @@ export default function AuthForm() {
   useEffect(() => {
     async function fetchUser() {
       try {
-        const { user } = await supabase.auth.getUser();
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
         setLoggedInUser(user);
         setIsLoading(false);
       } catch (error) {
@@ -46,7 +49,7 @@ export default function AuthForm() {
 
   const handleSignIn = async () => {
     try {
-      const { user, error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email: inputEmail,
         password: inputPassword,
       });
@@ -54,8 +57,9 @@ export default function AuthForm() {
       if (error) {
         console.error("Error signing in:", error);
       } else {
-        setUser(user);
+        setUser(data.user);
         router.push("/pages");
+        //router.refresh();
 
         setInputEmail("");
         setInputPassword("");
@@ -68,6 +72,8 @@ export default function AuthForm() {
   const handleLogout = async () => {
     await supabase.auth.signOut();
     router.refresh();
+    setInputEmail("");
+    setInputPassword("");
     setLoggedInUser(null);
   };
 
@@ -78,6 +84,7 @@ export default function AuthForm() {
   if (!loggedInUser) {
     return (
       <main className="h-screen flex items-center justify-center">
+        <Navbar key={loggedInUser} />
         <div className="bg-gray-800 p-8 rounded-lg shadow-md w-96">
           <input
             type="email"
@@ -114,7 +121,6 @@ export default function AuthForm() {
 
   return (
     <div>
-      <Posts />
       <button onClick={handleLogout}>Logout</button>
     </div>
   );
