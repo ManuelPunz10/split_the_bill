@@ -19,7 +19,6 @@ function Home() {
         const {
           data: { user },
         } = await supabase.auth.getUser();
-        console.log(user);
         setLoggedInUser(user);
       } catch (error) {
         console.error("Error fetching user:", error);
@@ -202,7 +201,6 @@ function Home() {
                   placeholder="0"
                   min={0}
                   value={user.portion}
-                  /*onChange={(e) => handlePortionChange(user.userId, e.target.value)}*/
                 />
                 €
               </p>
@@ -221,8 +219,6 @@ function Home() {
               </label>
             }
           </div>
-          {/*users.map((user) => (
-          ))*/}
           <label htmlFor="comment">Comment:</label>
           <textarea
             className="border border-b-2 border-b-[#808080]"

@@ -17,7 +17,6 @@ export default function Posts() {
         const {
           data: { user },
         } = await supabase.auth.getUser();
-        console.log(user);
         setLoggedInUser(user);
       } catch (error) {
         console.error("Error fetching user:", error);
@@ -30,7 +29,6 @@ export default function Posts() {
         const { data: usersData, error: usersError } = await supabase
           .from("users")
           .select("*");
-        console.log("Users data after fetching:", usersData);
         if (usersError) {
           console.error("Error fetching users data:", usersError);
           return;
@@ -38,7 +36,6 @@ export default function Posts() {
 
         const { data: transactionsData, error: transactionsError } =
           await supabase.from("transactions").select("*");
-        console.log("Transaction data after fetching:", transactionsData);
         if (transactionsError) {
           console.error("Error fetching transactions data:", transactionsError);
           return;
@@ -47,7 +44,6 @@ export default function Posts() {
         const { data: expensesData, error: expensesError } = await supabase
           .from("userTransaction")
           .select("*");
-        console.log("Expenses data after fetching:", expensesData);
         if (expensesError) {
           console.error("Error fetching expenses data:", expensesError);
           return;

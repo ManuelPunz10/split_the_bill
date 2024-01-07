@@ -18,7 +18,6 @@ export default function ExpensePage({ params }) {
         const {
           data: { user },
         } = await supabase.auth.getUser();
-        console.log(user);
         setLoggedInUser(user);
       } catch (error) {
         console.error("Error fetching user:", error);
