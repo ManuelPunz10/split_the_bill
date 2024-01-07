@@ -66,7 +66,7 @@ export default function Posts() {
       <h2 className="w-[600px]">Overview</h2>
       <ul className="w-[600px]">
         {usersSupa.map((user) => (
-          <Link href={`/user/${user.userId}`} key={user.userId}>
+          <div key={user.userId}>
             <li
               className="w-full flex justify-between p-2"
               onClick={() => handleTransactionClick(trans)}
@@ -87,7 +87,7 @@ export default function Posts() {
                 €
               </p>
             </li>
-          </Link>
+          </div>
         ))}
       </ul>
       <button className="custom-btn btn-15 m-5">Add user</button>

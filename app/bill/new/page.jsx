@@ -81,6 +81,26 @@ function Home() {
             .from("userTransaction")
             .insert([transactionData]);
         }
+      } else {
+        for (let i = 0; i < users.length; i++) {
+          let user = users[i];
+
+          let key = "portion_" + user.userId;
+          console.log(key);
+          let value = parseFloat(event.target[key].value);
+          console.log(value);
+
+          const transactionData = {
+            userId: user.userId,
+            transactionId: selectedTransaction.id,
+            amount: value,
+            created_at: new Date().toISOString(),
+          };
+
+          const { data2, error } = await supabase
+            .from("userTransaction")
+            .insert([transactionData]);
+        }
       }
 
       setTitle("");
@@ -145,13 +165,14 @@ function Home() {
           </div>
           <h2 className="hField">Who has to pay how much?:</h2>
           {users.map((user) => (
-            <div className="flex justify-between" key={user.id}>
-              <label className="normal" htmlFor={`check_${user.id}`}>
+            <div className="flex justify-between" key={user.userId}>
+              <label className="normal" htmlFor={`check_${user.userId}`}>
                 <input
                   className="mr-2"
                   type="checkbox"
-                  name={`check_${user.id}`}
-                  id={`check_${user.id}`}
+                  name={`check_${user.userId}`}
+                  id={`check_${user.userId}`}
+                  hidden="true"
                 />
                 {user.username}:
               </label>
@@ -159,12 +180,12 @@ function Home() {
                 <input
                   type="number"
                   className="w-[100px] border mr-1 number-field"
-                  name={`portion_${user.id}`}
-                  id={`portion_${user.id}`}
+                  name={`portion_${user.userId}`}
+                  id={`portion_${user.userId}`}
                   placeholder="0"
                   min={0}
                   value={user.portion}
-                  /*onChange={(e) => handlePortionChange(user.id, e.target.value)}*/
+                  /*onChange={(e) => handlePortionChange(user.userId, e.target.value)}*/
                 />
                 €
               </p>
