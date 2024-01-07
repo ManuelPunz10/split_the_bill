@@ -6,6 +6,7 @@ import Link from "next/link";
 export default function Posts() {
   const [usersSupa, setUsersSupa] = useState([]);
   const [transactionsSupa, setTransactionsSupa] = useState([]);
+  const [expensesSupa, setExpensesSupa] = useState([]);
 
   useEffect(() => {
     async function fetchData() {
@@ -13,7 +14,7 @@ export default function Posts() {
         const { data: usersData, error: usersError } = await supabase
           .from("users")
           .select("*");
-
+        console.log("Users data after fetching:", usersData);
         if (usersError) {
           console.error("Error fetching users data:", usersError);
           return;
@@ -21,14 +22,24 @@ export default function Posts() {
 
         const { data: transactionsData, error: transactionsError } =
           await supabase.from("transactions").select("*");
-
+        console.log("Transaction data after fetching:", transactionsData);
         if (transactionsError) {
           console.error("Error fetching transactions data:", transactionsError);
           return;
         }
 
+        const { data: expensesData, error: expensesError } = await supabase
+          .from("userTransaction")
+          .select("*");
+        console.log("Expenses data after fetching:", expensesData);
+        if (expensesError) {
+          console.error("Error fetching expenses data:", expensesError);
+          return;
+        }
+
         setUsersSupa(usersData);
         setTransactionsSupa(transactionsData);
+        setExpensesSupa(expensesData);
       } catch (error) {
         console.error("Error fetching data:", error);
       }
@@ -37,13 +48,25 @@ export default function Posts() {
     fetchData();
   }, []);
 
+  usersSupa.forEach((user) => {
+    user.balance = 0;
+
+    transactionsSupa.forEach((trans) => {
+      if (trans.userId === user.userId) user.balance += trans.amount;
+    });
+
+    expensesSupa.forEach((exp) => {
+      if (exp.userId === user.userId) user.balance -= exp.amount;
+    });
+  });
+
   return (
     <div className="w-[600px] flex flex-col justify-center items-center">
       <h1 className="w-[600px]">Smash Turnier</h1>
       <h2 className="w-[600px]">Overview</h2>
       <ul className="w-[600px]">
         {usersSupa.map((user) => (
-          <a href="./bill" key={user.userId}>
+          <Link href={`/user/${user.userId}`} key={user.userId}>
             <li
               className="w-full flex justify-between p-2"
               onClick={() => handleTransactionClick(trans)}
@@ -64,7 +87,7 @@ export default function Posts() {
                 €
               </p>
             </li>
-          </a>
+          </Link>
         ))}
       </ul>
       <button className="custom-btn btn-15 m-5">Add user</button>

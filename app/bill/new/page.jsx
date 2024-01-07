@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 function Home() {
   const router = useRouter();
   const [users, setUsers] = useState([]);
+  const [transactions, setTransactions] = useState([]);
   const [title, setTitle] = useState("");
   const [amount, setAmount] = useState("");
   const [userId, setUserId] = useState("");
@@ -23,10 +24,23 @@ function Home() {
       }
     }
     fetchUsers();
+    async function fetchTransactions() {
+      try {
+        const { data, error } = await supabase.from("transactions").select("*");
+        if (error) {
+          throw new Error(error.message);
+        }
+        setTransactions(data);
+      } catch (error) {
+        console.error("Error fetching users:", error);
+      }
+    }
+    fetchTransactions();
   }, []);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+
     try {
       const selectedUser = users.find((user) => {
         console.log("User:", user);
@@ -37,19 +51,36 @@ function Home() {
         throw new Error("Invalid user selected.");
       }
 
+      const timestamp = new Date().toISOString();
       const expenseData = {
         userId: selectedUser.userId,
         amount: parseFloat(amount),
         title: title,
-        created_at: new Date().toISOString(),
+        created_at: timestamp,
       };
 
       const { data, error } = await supabase
         .from("transactions")
-        .insert([expenseData]);
+        .insert([expenseData])
+        .select();
 
-      if (error) {
-        throw new Error(error.message);
+      const selectedTransaction = data[0];
+
+      if (event.target.check_split.checked) {
+        for (let i = 0; i < users.length; i++) {
+          let user = users[i];
+
+          const transactionData = {
+            userId: user.userId,
+            transactionId: selectedTransaction.id,
+            amount: parseFloat(amount) / users.length,
+            created_at: new Date().toISOString(),
+          };
+
+          const { data2, error } = await supabase
+            .from("userTransaction")
+            .insert([transactionData]);
+        }
       }
 
       setTitle("");
@@ -57,7 +88,7 @@ function Home() {
       setUserId("");
 
       console.log("Expense added successfully:", data);
-      router.push("/");
+      router.push("/pages");
     } catch (error) {
       console.error("Error adding expense:", error);
     }
@@ -133,18 +164,27 @@ function Home() {
                   placeholder="0"
                   min={0}
                   value={user.portion}
-                  onChange={(e) => handlePortionChange(user.id, e.target.value)}
+                  /*onChange={(e) => handlePortionChange(user.id, e.target.value)}*/
                 />
                 €
               </p>
             </div>
           ))}
           <div className="w-full flex justify-end">
-            <label className="mt-2 text-sm" htmlFor="split">
-              or split equally
-              <input className="ml-2" type="checkbox" name="split" id="split" />
-            </label>
+            {
+              <label className="mt-2 text-sm" htmlFor="check_split">
+                or split equally
+                <input
+                  className="ml-2"
+                  type="checkbox"
+                  name={`check_split`}
+                  id={`check_split`}
+                />
+              </label>
+            }
           </div>
+          {/*users.map((user) => (
+          ))*/}
           <label htmlFor="comment">Comment:</label>
           <textarea
             className="border border-b-2 border-b-[#808080]"
@@ -154,6 +194,7 @@ function Home() {
             name="comment"
             required
           />
+
           <div className="w-full flex justify-center pt-8">
             <button className="custom-btn btn-15 mb-2" type="submit">
               Add Expense
@@ -161,7 +202,7 @@ function Home() {
           </div>
         </form>
       </div>
-      <a className="custom-btn2 btn-16 mt-5" href="/">
+      <a className="custom-btn2 btn-16 mt-5" href="/pages">
         Cancel
       </a>
     </>
